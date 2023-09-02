@@ -3,17 +3,19 @@
     <div class="graph">
       <canvas ref="canvas"></canvas>
     </div>
-    <button class="button" @click="toggleMicrophone">
-      {{ isMicrophoneOn ? 'Turn off microphone' : 'Turn on microphone' }}
-    </button>
+    <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
 </template>
 
 <script lang="ts">
 import { ref, onUnmounted } from 'vue'
+import MicButton from './mic-button.vue'
 
 export default {
   name: 'TunerLayout',
+  components: {
+    MicButton
+  },
   setup() {
     const isMicrophoneOn = ref(false)
     const canvas = ref<HTMLCanvasElement | null>(null)
@@ -121,27 +123,5 @@ export default {
   height: 100vh; // Full viewport height
   width: 100vw; // Full viewport height
   background-color: lightgreen;
-}
-
-/* .graph {
-  width: 500px;
-  height: 500px;
-  background-color: white;
-} */
-
-.button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  background-color: #42b883; // Green color
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background-color 0.3s ease;
-
-  &:hover {
-    background-color: #2c5e5b; // Darker green color
-  }
 }
 </style>
