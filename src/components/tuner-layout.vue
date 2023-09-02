@@ -13,7 +13,7 @@
 import { ref, onUnmounted } from 'vue'
 
 export default {
-  name: 'MicButton',
+  name: 'TunerLayout',
   setup() {
     const isMicrophoneOn = ref(false)
     const canvas = ref<HTMLCanvasElement | null>(null)

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import MicButton from './components/mic-button.vue'
+import TunerLayout from './components/tuner-layout.vue'
 </script>
 
 <template>
-  <MicButton />
+  <TunerLayout />
 </template>
 
 <style lang="scss">
