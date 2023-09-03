@@ -1,6 +1,6 @@
 <template>
   <button class="mic-button" @click="emit('on:toggle-mic')">
-    {{ isMicrophoneOn ? 'Turn off microphone' : 'Turn on microphone' }}
+    {{ `Turn ${isMicrophoneOn ? 'on' : 'off'} microphone` }}
   </button>
 </template>
 
@@ -24,7 +24,7 @@ export default defineComponent({
 .mic-button {
   margin-top: 20px;
   padding: 10px 20px;
-  background-color: #42b883; // Green color
+  background-color: #42b883;
   color: white;
   border: none;
   border-radius: 5px;
@@ -33,7 +33,7 @@ export default defineComponent({
   transition: background-color 0.3s ease;
 
   &:hover {
-    background-color: #2c5e5b; // Darker green color
+    background-color: #2c5e5b;
   }
 }
 </style>
