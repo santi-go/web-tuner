@@ -1,8 +1,7 @@
 <template>
-  <div class="container">
-    <div class="graph">
-      <canvas ref="canvas"></canvas>
-    </div>
+  <div class="tuner">
+    <div class="tuner__frequency">Freq: {{ frequencyDisplay }}</div>
+    <canvas ref="canvas"></canvas>
     <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
 </template>
@@ -19,6 +18,8 @@ export default {
   setup() {
     const isMicrophoneOn = ref(false)
     const canvas = ref<HTMLCanvasElement | null>(null)
+    const frequencyDisplay = ref('0')
+    let baseFrequency = ref(0)
     let audioContext: AudioContext | null = null
     let mediaStream: MediaStream | null = null
     let analyser: AnalyserNode | null = null
@@ -26,7 +27,6 @@ export default {
 
     const toggleMicrophone = async () => {
       if (isMicrophoneOn.value) {
-        // Turn off the microphone
         if (audioContext) {
           audioContext.close()
           audioContext = null
@@ -40,9 +40,11 @@ export default {
           cancelAnimationFrame(animationFrameId)
           animationFrameId = null
         }
+        if (frequencyDisplay.value) {
+          frequencyDisplay.value = '0'
+        }
         isMicrophoneOn.value = false
       } else {
-        // Turn on the microphone
         try {
           mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
           audioContext = new AudioContext()
@@ -72,6 +74,17 @@ export default {
 
         analyser.getByteFrequencyData(dataArray)
 
+        let maxIndex = 0
+        for (let i = 0; i < bufferLength; i++) {
+          if (dataArray[i] > dataArray[maxIndex]) {
+            maxIndex = i
+          }
+        }
+
+        // Calculate the frequency and display it
+        baseFrequency.value = (maxIndex * (audioContext!.sampleRate / 2)) / bufferLength
+        frequencyDisplay.value = `${baseFrequency.value.toFixed(2)} Hz`
+
         canvasContext.fillStyle = 'rgb(0, 0, 0)'
         canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
 
@@ -93,7 +106,6 @@ export default {
     }
 
     onUnmounted(() => {
-      // Make sure to clean up when the component is unmounted
       if (audioContext) {
         audioContext.close()
       }
@@ -107,6 +119,7 @@ export default {
 
     return {
       isMicrophoneOn,
+      frequencyDisplay,
       toggleMicrophone,
       canvas
     }
@@ -115,13 +128,20 @@ export default {
 </script>
 
 <style lang="scss">
-.container {
+.tuner {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh; // Full viewport height
-  width: 100vw; // Full viewport height
+  height: 100vh;
+  width: 100vw;
   background-color: lightgreen;
+
+  &__frequency {
+    background-color: black;
+    color: white;
+    padding: 0px 8px;
+    margin-bottom: 12px;
+  }
 }
 </style>
