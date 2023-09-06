@@ -70,6 +70,11 @@ export default {
       currentFrequency.value = `${baseFrequency.value.toFixed(2)} Hz`
     }
 
+    const resetFrequencyGraph = (canvasContext: CanvasRenderingContext2D) => {
+      canvasContext.fillStyle = 'rgb(0, 0, 0)'
+      canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
+    }
+
     const drawFrequencyGraph = () => {
       if (!analyser || !canvas.value) return
       const canvasContext = canvas.value.getContext('2d')
@@ -88,8 +93,7 @@ export default {
 
           showFrequency(bufferLength, dataArray)
 
-          canvasContext.fillStyle = 'rgb(0, 0, 0)'
-          canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
+          resetFrequencyGraph(canvasContext)
 
           const barWidth = (canvas.value.width / bufferLength) * 2.5
           let barHeight
