@@ -1,7 +1,7 @@
 <template>
   <div class="tuner">
     <div class="tuner__frequency">Freq: {{ currentFrequency }}</div>
-    <canvas ref="canvas"></canvas>
+    <canvas ref="canvas" width="500" height="300"></canvas>
     <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
 </template>
@@ -25,7 +25,7 @@ export default {
     let analyser: AnalyserNode | null = null
     let animationFrameId: number | null = null
 
-    const toggleMicrophone = async () => {
+    const toggleMicrophone = async (): Promise<void> => {
       if (isMicrophoneOn.value) {
         if (audioContext) {
           audioContext.close()
@@ -59,7 +59,7 @@ export default {
       }
     }
 
-    const showFrequency = (bufferLength: number, dataArray: Uint8Array) => {
+    const showFrequency = (bufferLength: number, dataArray: Uint8Array): void => {
       let maxIndex = 0
       for (let i = 0; i < bufferLength; i++) {
         if (dataArray[i] > dataArray[maxIndex]) {
@@ -70,10 +70,27 @@ export default {
       currentFrequency.value = `${baseFrequency.value.toFixed(2)} Hz`
     }
 
-    const resetFrequencyGraph = (canvasContext: CanvasRenderingContext2D) => {
+    const resetFrequencyGraph = (canvasContext: CanvasRenderingContext2D): void => {
       if (canvas.value) {
         canvasContext.fillStyle = 'rgb(0, 0, 0)'
         canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
+      }
+    }
+
+    const drawBars = (canvasContext: CanvasRenderingContext2D, bufferLength: number, dataArray: Uint8Array): void => {
+      if (canvas.value) {
+        const barWidth = (canvas.value.width / bufferLength) * 2.5
+        let barHeight
+        let x = 0
+
+        for (let i = 0; i < bufferLength; i++) {
+          barHeight = dataArray[i]
+
+          canvasContext.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
+          canvasContext.fillRect(x, canvas.value.height - barHeight / 2, barWidth, barHeight / 2)
+
+          x += barWidth + 1
+        }
       }
     }
 
@@ -90,25 +107,12 @@ export default {
       const draw = () => {
         if (canvas.value && analyser) {
           animationFrameId = requestAnimationFrame(draw)
-
           analyser.getByteFrequencyData(dataArray)
 
           showFrequency(bufferLength, dataArray)
-
           resetFrequencyGraph(canvasContext)
+          drawBars(canvasContext, bufferLength, dataArray)
 
-          const barWidth = (canvas.value.width / bufferLength) * 2.5
-          let barHeight
-          let x = 0
-
-          for (let i = 0; i < bufferLength; i++) {
-            barHeight = dataArray[i]
-
-            canvasContext.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
-            canvasContext.fillRect(x, canvas.value.height - barHeight / 2, barWidth, barHeight / 2)
-
-            x += barWidth + 1
-          }
         }
       }
 
