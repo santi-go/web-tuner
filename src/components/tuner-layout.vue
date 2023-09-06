@@ -1,6 +1,6 @@
 <template>
   <div class="tuner">
-    <div class="tuner__frequency">Freq: {{ frequencyDisplay }}</div>
+    <div class="tuner__frequency">Freq: {{ currentFrequency }}</div>
     <canvas ref="canvas"></canvas>
     <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
@@ -18,7 +18,7 @@ export default {
   setup() {
     const isMicrophoneOn = ref(false)
     const canvas = ref<HTMLCanvasElement | null>(null)
-    const frequencyDisplay = ref('0')
+    const currentFrequency = ref('0')
     let baseFrequency = ref(0)
     let audioContext: AudioContext | null = null
     let mediaStream: MediaStream | null = null
@@ -40,8 +40,8 @@ export default {
           cancelAnimationFrame(animationFrameId)
           animationFrameId = null
         }
-        if (frequencyDisplay.value) {
-          frequencyDisplay.value = '0'
+        if (currentFrequency.value) {
+          currentFrequency.value = '0'
         }
         isMicrophoneOn.value = false
       } else {
@@ -59,6 +59,17 @@ export default {
       }
     }
 
+    const showFrequency = (bufferLength: number, dataArray: Uint8Array) => {
+      let maxIndex = 0
+      for (let i = 0; i < bufferLength; i++) {
+        if (dataArray[i] > dataArray[maxIndex]) {
+          maxIndex = i
+        }
+      }
+      baseFrequency.value = (maxIndex * (audioContext!.sampleRate / 2)) / bufferLength
+      currentFrequency.value = `${baseFrequency.value.toFixed(2)} Hz`
+    }
+
     const drawFrequencyGraph = () => {
       if (!analyser || !canvas.value) return
       const canvasContext = canvas.value.getContext('2d')
@@ -70,35 +81,28 @@ export default {
       canvasContext.clearRect(0, 0, canvas.value.width, canvas.value.height)
 
       const draw = () => {
-        animationFrameId = requestAnimationFrame(draw)
+        if (canvas.value && analyser) {
+          animationFrameId = requestAnimationFrame(draw)
 
-        analyser.getByteFrequencyData(dataArray)
+          analyser.getByteFrequencyData(dataArray)
 
-        let maxIndex = 0
-        for (let i = 0; i < bufferLength; i++) {
-          if (dataArray[i] > dataArray[maxIndex]) {
-            maxIndex = i
+          showFrequency(bufferLength, dataArray)
+
+          canvasContext.fillStyle = 'rgb(0, 0, 0)'
+          canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
+
+          const barWidth = (canvas.value.width / bufferLength) * 2.5
+          let barHeight
+          let x = 0
+
+          for (let i = 0; i < bufferLength; i++) {
+            barHeight = dataArray[i]
+
+            canvasContext.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
+            canvasContext.fillRect(x, canvas.value.height - barHeight / 2, barWidth, barHeight / 2)
+
+            x += barWidth + 1
           }
-        }
-
-        // Calculate the frequency and display it
-        baseFrequency.value = (maxIndex * (audioContext!.sampleRate / 2)) / bufferLength
-        frequencyDisplay.value = `${baseFrequency.value.toFixed(2)} Hz`
-
-        canvasContext.fillStyle = 'rgb(0, 0, 0)'
-        canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
-
-        const barWidth = (canvas.value.width / bufferLength) * 2.5
-        let barHeight
-        let x = 0
-
-        for (let i = 0; i < bufferLength; i++) {
-          barHeight = dataArray[i]
-
-          canvasContext.fillStyle = 'rgb(' + (barHeight + 100) + ',50,50)'
-          canvasContext.fillRect(x, canvas.value.height - barHeight / 2, barWidth, barHeight / 2)
-
-          x += barWidth + 1
         }
       }
 
@@ -119,7 +123,7 @@ export default {
 
     return {
       isMicrophoneOn,
-      frequencyDisplay,
+      currentFrequency,
       toggleMicrophone,
       canvas
     }
