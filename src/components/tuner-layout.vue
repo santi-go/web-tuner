@@ -71,8 +71,10 @@ export default {
     }
 
     const resetFrequencyGraph = (canvasContext: CanvasRenderingContext2D) => {
-      canvasContext.fillStyle = 'rgb(0, 0, 0)'
-      canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
+      if (canvas.value) {
+        canvasContext.fillStyle = 'rgb(0, 0, 0)'
+        canvasContext.fillRect(0, 0, canvas.value.width, canvas.value.height)
+      }
     }
 
     const drawFrequencyGraph = () => {
