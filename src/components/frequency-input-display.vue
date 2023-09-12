@@ -1,14 +1,22 @@
 <template>
-  <div class="tuner__frequency">Freq: {{ currentFrequency }}</div>
+  <div class="tuner__frequency">Freq: {{ displayFrequency }}</div>
 </template>
 
 <script lang="ts">
+import { computed, toRefs } from 'vue';
 
 export default {
   name: 'FrequencyInputDisplay',
   props: {
-    currentFrequency: { type: String }
+    baseFrequency: { type: Number, default: 0 }
   },
+  setup(props) {
+    const { baseFrequency } = toRefs(props);
+    const displayFrequency = computed(() => `${baseFrequency.value.toFixed(2)} Hz`)
+    return {
+      displayFrequency,
+    }
+  }
 }
 </script>
 

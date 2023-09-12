@@ -1,6 +1,6 @@
 <template>
   <div class="tuner">
-    <FrequencyInputDisplay :currentFrequency="currentFrequency" />
+    <FrequencyInputDisplay :baseFrequency="baseFrequency" />
     <canvas ref="canvas" width="500" height="300"></canvas>
     <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
@@ -20,7 +20,6 @@ export default {
   setup() {
     const isMicrophoneOn = ref(false)
     const canvas = ref<HTMLCanvasElement | null>(null)
-    const currentFrequency = ref('0')
     let baseFrequency = ref(0)
     let audioContext: AudioContext | null = null
     let mediaStream: MediaStream | null = null
@@ -41,9 +40,6 @@ export default {
         if (animationFrameId) {
           cancelAnimationFrame(animationFrameId)
           animationFrameId = null
-        }
-        if (currentFrequency.value) {
-          currentFrequency.value = '0'
         }
         isMicrophoneOn.value = false
       } else {
@@ -69,7 +65,6 @@ export default {
         }
       }
       baseFrequency.value = (maxIndex * (audioContext!.sampleRate / 2)) / bufferLength
-      currentFrequency.value = `${baseFrequency.value.toFixed(2)} Hz`
     }
 
     const resetFrequencyGraph = (canvasContext: CanvasRenderingContext2D): void => {
@@ -135,7 +130,7 @@ export default {
 
     return {
       isMicrophoneOn,
-      currentFrequency,
+      baseFrequency,
       toggleMicrophone,
       canvas
     }
