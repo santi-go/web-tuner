@@ -1,6 +1,6 @@
 <template>
   <div class="tuner">
-    <div class="tuner__frequency">Freq: {{ currentFrequency }}</div>
+    <FrequencyInputDisplay :currentFrequency="currentFrequency" />
     <canvas ref="canvas" width="500" height="300"></canvas>
     <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
@@ -9,11 +9,13 @@
 <script lang="ts">
 import { ref, onUnmounted } from 'vue'
 import MicButton from './mic-button.vue'
+import FrequencyInputDisplay from './frequency-input-display.vue'
 
 export default {
   name: 'TunerLayout',
   components: {
-    MicButton
+    MicButton,
+    FrequencyInputDisplay,
   },
   setup() {
     const isMicrophoneOn = ref(false)
@@ -150,12 +152,5 @@ export default {
   height: 100vh;
   width: 100vw;
   background-color: lightgreen;
-
-  &__frequency {
-    background-color: black;
-    color: white;
-    padding: 0px 8px;
-    margin-bottom: 12px;
-  }
 }
 </style>
