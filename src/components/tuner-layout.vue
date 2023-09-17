@@ -1,13 +1,13 @@
 <template>
   <div class="tuner">
-    <FrequencyInputDisplay :baseFrequency="baseFrequency" />
+    <FrequencyInputDisplay :baseFrequency="normalizeFrequency" />
     <canvas ref="canvas" width="500" height="300"></canvas>
     <MicButton :isMicrophoneOn="isMicrophoneOn" @on:toggle-mic="toggleMicrophone" />
   </div>
 </template>
 
 <script lang="ts">
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, watch } from 'vue'
 import MicButton from './mic-button.vue'
 import FrequencyInputDisplay from './frequency-input-display.vue'
 
@@ -21,6 +21,7 @@ export default {
     const isMicrophoneOn = ref(false)
     const canvas = ref<HTMLCanvasElement | null>(null)
     let baseFrequency = ref(0)
+    let normalizeFrequency = ref(0)
     let audioContext: AudioContext | null = null
     let mediaStream: MediaStream | null = null
     let analyser: AnalyserNode | null = null
@@ -55,6 +56,16 @@ export default {
           console.error('Error accessing the microphone', error)
         }
       }
+    }
+
+    const getLowestOctave = (freq: number) => {
+      while (freq > 40) {
+        freq /= 2;
+      }
+      if (freq < 20) {
+        freq = 20;
+      }
+      return freq;
     }
 
     const showFrequency = (bufferLength: number, dataArray: Uint8Array): void => {
@@ -116,6 +127,10 @@ export default {
       draw()
     }
 
+    watch(baseFrequency, (newValue) => {
+      normalizeFrequency.value = getLowestOctave(newValue)
+    })
+
     onUnmounted(() => {
       if (audioContext) {
         audioContext.close()
@@ -131,6 +146,7 @@ export default {
     return {
       isMicrophoneOn,
       baseFrequency,
+      normalizeFrequency,
       toggleMicrophone,
       canvas
     }
